@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
-class RoomAvailability extends Model
+//RoomAvailabilities
+class RoomAvailabilities extends Model
 {
     use HasFactory;
 

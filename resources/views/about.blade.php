@@ -637,7 +637,7 @@
             </form>
         @endguest
             </div>
-            
+            <button class="mobile-menu-btn">☰</button>
         </nav>
     </header>
 

@@ -880,6 +880,7 @@
     </style>
 </head>
 <body>
+   
     <!-- Header -->
     <header>
         <nav class="container">
@@ -905,6 +906,7 @@
             </form>
         @endguest
             </div>
+            <button class="mobile-menu-btn">☰</button>
         </nav>
     </header>
 
@@ -1026,42 +1028,42 @@
                     
                     <div class="summary-row">
                         <span class="summary-label">Room:</span>
-                        <span class="summary-value">Executive King Room</span>
+                        <span class="summary-value" id="summaryRoom">Executive King Room</span>
                     </div>
                     
                     <div class="summary-row">
                         <span class="summary-label">Dates:</span>
-                        <span class="summary-value">Jun 25 - Jun 26, 2025</span>
+                        <span class="summary-value" id="summaryDates">Jun 25 - Jun 26, 2025</span>
                     </div>
                     
                     <div class="summary-row">
                         <span class="summary-label">Guests:</span>
-                        <span class="summary-value">1</span>
+                        <span class="summary-value" id="summaryGuests">1</span>
                     </div>
                     
                     <div class="summary-row border-bottom">
                         <span class="summary-label">Duration:</span>
-                        <span class="summary-value">1 night</span>
+                        <span class="summary-value" id="summaryNights">1 night</span>
                     </div>
                     
                     <div class="summary-row">
                         <span class="summary-label">Room Rate:</span>
-                        <span class="summary-value">$320 × 1 nights</span>
+                        <span class="summary-value" id="summaryRates">$320 × 1 nights</span>
                     </div>
                     
                     <div class="summary-row">
                         <span class="summary-label">Subtotal:</span>
-                        <span class="summary-value">$320</span>
+                        <span class="summary-value" id="summarySubtotal">$320</span>
                     </div>
                     
                     <div class="summary-row">
                         <span class="summary-label">Taxes & Fees (12%):</span>
-                        <span class="summary-value">$38</span>
+                        <span class="summary-value" id="summaryTax">$38</span>
                     </div>
                     
                     <div class="summary-row summary-total">
                         <span class="summary-label">Total:</span>
-                        <span class="summary-value">$358</span>
+                        <span class="summary-value" id="summaryTotal">$358</span>
                     </div>
 
                     <div class="cancellation-policy">
@@ -1171,10 +1173,21 @@
     </div>
 
     <script>
+
+        function getCookie(name) {
+  const cookies = Object.fromEntries(
+    document.cookie.split('; ').map(cookie => {
+      const [key, value] = cookie.split('=');
+      return [key, decodeURIComponent(value)];
+    })
+  );
+  return cookies[name] || null;
+}
         // Mobile menu functionality
         const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
         const navLinks = document.querySelector('.nav-links');
 
+        
         mobileMenuBtn.addEventListener('click', function() {
             if (navLinks.style.display === 'flex') {
                 navLinks.style.display = 'none';
@@ -1190,6 +1203,19 @@
                 navLinks.style.padding = '1rem';
                 navLinks.style.zIndex = '1000';
             }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+             var cookiedata = getCookie('room');
+             var room = JSON.parse(cookiedata);
+             console.log(room.room_id);
+             document.getElementById('summaryRoom').textContent = room.room_name;
+             document.getElementById('summaryDates').textContent = `${room.checkin} - ${room.checkout}`;
+             document.getElementById('summarySubtotal').textContent = `Ksh${room.subtotal}`;
+             document.getElementById('summaryRates').textContent = `Ksh${room.base_price} × ${room.nights} nights`;
+             document.getElementById('summaryNights').textContent = `${room.nights} nights`;
+             document.getElementById('summaryTax').textContent = `Ksh${room.tax}`;
+             document.getElementById('summaryTotal').textContent = `Ksh${room.total}`;
         });
 
         // Payment method selection
@@ -1257,6 +1283,66 @@
             e.target.value = e.target.value.replace(/\D/g, '');
         });
 
+        
+         async function createBooking() {
+     try {
+
+    // Extract XSRF token from cookies
+    const xsrfToken = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('XSRF-TOKEN='))
+      ?.split('=')[1];
+
+    if (!xsrfToken) {
+      throw new Error('XSRF token not found in cookies');
+    }
+
+    // Step 2: Make booking request
+    return await fetch('http://127.0.0.1:8000/bookings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-XSRF-TOKEN': decodeURIComponent(xsrfToken),  // Decode URL-encoded token
+      },
+      credentials: 'include',  // Send cookies with request
+      body: JSON.stringify({
+      user_id: 2,
+      room_id: 2,
+      check_in: "2025-08-15",      // Added to top-level
+      check_out: "2025-08-20",     // Added to top-level
+      guests: 2,                   // Added to top-level
+      booking_data: {              // Keep if your backend still needs this
+        check_in: "2025-08-15",
+        check_out: "2025-08-20",
+        guests: 2
+      },
+      guest_details: {
+        // Added primary_guest object with all required fields
+        primary_guest: {
+          name: "John Smith",
+          email: "john@example.com",
+          phone: "+1234567890"
+        },
+        // Keep additional guests if needed
+        additional_guests: [
+          {
+            name: "Jane Smith",
+            email: "jane@example.com"
+          }
+        ]
+      }
+    })
+    });
+  } catch (error) {
+    console.log('Booking error:', error);
+    // Handle error in your UI
+  }
+}
+
+// Execute the function
+//createBooking();
+
         // Form submission
         document.getElementById('paymentForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -1301,6 +1387,12 @@
                     return;
                 }
             }
+
+            
+            var cookiedata = getCookie('room');
+            var room = JSON.parse(cookiedata);
+            console.log(room.room_id);
+            //createBooking();
             
             // Simulate payment processing
             submitBtn.textContent = 'Processing Payment...';

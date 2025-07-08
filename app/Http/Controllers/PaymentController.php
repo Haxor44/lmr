@@ -13,13 +13,14 @@ class PaymentController extends Controller
     public function index()
     {
         //
-        return view('payment');
+        return view('payment'); 
     }
 
+   
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         //
         $booking = Booking::findOrFail($request->booking);
@@ -56,7 +57,7 @@ class PaymentController extends Controller
      */
     public function show(string $id)
     {
-        //
+        // redirects to confirmation
     }
 
     /**

@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\BookingConfirmationController;
 use App\Http\Controllers\RoomsController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -43,6 +45,25 @@ Route::prefix('rooms')->group(function () {
     Route::get('/{room}/availability', [RoomsController::class, 'getAvailabilityCalendar']);
 });
 
+Route::post('/bookings', [BookingController::class, 'createBooking']);
+Route::get('/bookings', [BookingController::class, 'getUserBookings']);
+/*Route::middleware('auth:sanctum')->group(function () {
+    // Booking routes
+    
+    Route::post('/bookings/{booking}/confirm', [BookingController::class, 'confirmBooking']);
+    Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancelBooking']);
+    
+});*/
+
+Route::prefix('payment')->group(function () {
+    Route::get('/',[PaymentController::class,'index']);
+});
+
+ Route::get('/confirmation',[BookingConfirmationController::class,'index']);
+
+Route::get('/user/{id}', function ($id) {
+    return view('user', ['userId' => $id]);
+});
 
 Route::get('/dashboard', function () {
     return view('dashboard');

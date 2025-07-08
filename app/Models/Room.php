@@ -26,7 +26,7 @@ class Room extends Model
 
     public function availability()
     {
-        return $this->hasMany(RoomAvailability::class);
+        return $this->hasMany(RoomAvailabilities::class);
     }
 
     public function isAvailable($checkIn, $checkOut)

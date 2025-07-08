@@ -573,8 +573,8 @@
             <div class="logo">Matfam</div>
             <ul class="nav-links">
                 <li><a href="{{ url('/') }}">Home</a></li>
-                <li><a href="{{ url('/rooms') }}">Rooms</a></li>
-                <li><a href="{{ url('/services') }}" class="active">Services</a></li>
+                <li><a href="{{ url('/rooms') }}" class="active">Rooms</a></li>
+                <li><a href="{{ url('/services') }}">Services</a></li>
                 <li><a href="{{ url('/about') }}">About</a></li>
             </ul>
             <div class="auth-buttons">
@@ -592,6 +592,7 @@
             </form>
         @endguest
             </div>
+            <button class="mobile-menu-btn">☰</button>
         </nav>
     </header>
 
@@ -921,7 +922,7 @@
             const baseRate = {{ $price }}
             
             const roomTotal = baseRate * nights;
-            console.log(roomTotal);
+            //console.log(roomTotal);
             // Calculate add-ons
             let addonsTotal = 0;
             const addons = document.querySelectorAll('input[name="addons"]:checked');
@@ -950,7 +951,19 @@
             document.getElementById('subtotal').textContent = `Ksh${subtotal}`;
             document.getElementById('taxes').textContent = `Ksh${taxes}`;
             document.getElementById('total').textContent = `Ksh${total}`;
+
+            ;
         }
+
+        function getCookie(name) {
+            const cookies = Object.fromEntries(
+        document.cookie.split('; ').map(cookie => {
+        const [key, value] = cookie.split('=');
+        return [key, decodeURIComponent(value)];
+        })
+        );
+    return cookies[name] || null;
+    }
 
         // Form submission
         document.getElementById('bookingForm').addEventListener('submit', function(e) {
@@ -960,6 +973,43 @@
             const checkinDate = formData.get('checkinDate');
             const checkoutDate = formData.get('checkoutDate');
             const guests = formData.get('guests');
+            const checkinDates = new Date(document.getElementById('checkinDate').value);
+            const checkoutDates = new Date(document.getElementById('checkoutDate').value);
+            const checkinFormatted = checkinDates.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const checkoutFormatted = checkoutDates.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            var price = {{ $price }};
+
+
+            // Calculate nights
+            const timeDiff = checkoutDates.getTime() - checkinDates.getTime();
+            const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+            const roomTotal = price * nights;
+
+            let addonsTotal = 0;
+            const addons = document.querySelectorAll('input[name="addons"]:checked');
+            addons.forEach(addon => {
+                switch(addon.value) {
+                    case 'breakfast':
+                        addonsTotal += 25;
+                        break;
+                    case 'lateCheckout':
+                        addonsTotal += 40;
+                        break;
+                    case 'airportTransfer':
+                        addonsTotal += 50;
+                        break;
+                    case 'spaAccess':
+                        addonsTotal += 35;
+                        break;
+                }
+            });
+            
+            const subtotal = roomTotal + addonsTotal;
+            const taxes = Math.round(subtotal * 0.12);
+            const total = subtotal + taxes;
+
+            console.log(total);
             
             // Basic validation
             if (!checkinDate || !checkoutDate || !guests) {
@@ -971,12 +1021,25 @@
                 alert('Check-out date must be after check-in date.');
                 return;
             }
+
+            var rmid = {{ $rmid }};
+            var rmname = `{{ $name }}`;
+           
+           
+            var room_data = {"room_id":rmid,"room_name":rmname,"checkin":checkinFormatted,"checkout":checkoutFormatted,"guests":guests,"nights":nights,"subtotal":subtotal,"tax":taxes,"base_price":price,"total":total};
+            
+            document.cookie = `room=${JSON.stringify(room_data)}; max-age=3600; path=/`;
+            var cookie = document.cookie;
+            var cookiedata = getCookie('room');
+            console.log(JSON.parse(cookiedata));
             
             // Simulate proceeding to payment
             //alert('Proceeding to payment page...');
             // In a real application, this would redirect to the payment page
            window.location.replace("{{ url('/payment') }}");
+           // we need room id,check_in,check_out,base_price,total_price,status,payment_method,confirmation code, guest_details
         });
+
 
         // Initialize summary on page load
         updateSummary();

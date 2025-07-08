@@ -816,7 +816,7 @@
             </form>
         @endguest
             </div>
-            
+            <button class="mobile-menu-btn">☰</button>
         </nav>
     </header>
 
@@ -1096,18 +1096,29 @@
 
     <script>
         // Set default dates for booking form
-        document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
+       document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            const checkinDate = document.getElementById('checkinDate');
+            const checkoutDate = document.getElementById('checkoutDate');
             
-            const checkinInput = document.getElementById('checkin');
-            const checkoutInput = document.getElementById('checkout');
+            checkinDate.min = today;
+            checkoutDate.min = today;
             
-            if (checkinInput && checkoutInput) {
-                checkinInput.value = today.toISOString().split('T')[0];
-                checkoutInput.value = tomorrow.toISOString().split('T')[0];
-            }
+            // Update checkout date when checkin changes
+            checkinDate.addEventListener('change', function() {
+                const checkinValue = new Date(this.value);
+                const nextDay = new Date(checkinValue);
+                nextDay.setDate(nextDay.getDate() + 1);
+                checkoutDate.min = nextDay.toISOString().split('T')[0];
+                
+                if (checkoutDate.value <= this.value) {
+                    checkoutDate.value = nextDay.toISOString().split('T')[0];
+                }
+                ;
+            });
+
+            
+            
         });
 
         // Handle booking form submission

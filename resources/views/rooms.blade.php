@@ -780,8 +780,8 @@
             <div class="logo">Matfam</div>
             <ul class="nav-links">
                 <li><a href="{{ url('/') }}">Home</a></li>
-                <li><a href="{{ url('/rooms') }}">Rooms</a></li>
-                <li><a href="{{ url('/services') }}" class="active">Services</a></li>
+                <li><a href="{{ url('/rooms') }}" class="active">Rooms</a></li>
+                <li><a href="{{ url('/services') }}">Services</a></li>
                 <li><a href="{{ url('/about') }}">About</a></li>
             </ul>
             <div class="auth-buttons">
@@ -799,7 +799,7 @@
             </form>
         @endguest
             </div>
-            
+            <button class="mobile-menu-btn">☰</button>
         </nav>
     </header>
 

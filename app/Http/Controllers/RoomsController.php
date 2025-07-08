@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Room;
-use App\Models\RoomAvailability;
+use App\Models\RoomAvailabilities;
 use App\Services\BookingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -33,7 +33,7 @@ class RoomsController extends Controller
 
       public function details($id){
         $room = Room::findOrFail($id);
-        return view('room-details',['rmid'=> $room->id,'price'=> $room->base_price]);
+        return view('room-details',['rmid'=> $room->id,'price'=> $room->base_price,'name'=>$room->name]);
      }
 
     public function all(Request $request)

@@ -532,6 +532,7 @@
             </form>
         @endguest
             </div>
+            <button class="mobile-menu-btn">☰</button>
         </nav>
     </header>
 
@@ -543,7 +544,7 @@
                 <div class="success-icon">✓</div>
                 <h1 class="confirmation-title">Booking Confirmed!</h1>
                 <p class="confirmation-subtitle">Thank you for your booking. Your confirmation number is:</p>
-                <div class="confirmation-number">BK-8PUGTF7P</div>
+                <div class="confirmation-number" id="bookingCode">BK-8PUGTF7P</div>
                 <p class="confirmation-email">A confirmation email has been sent to your email address.</p>
             </div>
 
@@ -555,12 +556,12 @@
                 <div class="check-dates">
                     <div class="check-date">
                         <h3>Check-in</h3>
-                        <div class="date">Wednesday, June 25, 2025</div>
+                        <div class="date" id="summaryCheckin">Wednesday, June 25, 2025</div>
                         <div class="time">From 3:00 PM</div>
                     </div>
                     <div class="check-date">
                         <h3>Check-out</h3>
-                        <div class="date">Thursday, June 26, 2025</div>
+                        <div class="date" id="summaryCheckout">Thursday, June 26, 2025</div>
                         <div class="time">Until 12:00 PM</div>
                     </div>
                 </div>
@@ -568,11 +569,11 @@
                 <!-- Room Info -->
                 <div class="room-info">
                     <div class="room-image">
-                        <img src="/placeholder.svg?height=100&width=120" alt="Executive King Room" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                        <img id="summaryImage" src="#" alt="Executive King Room" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
                     </div>
                     <div class="room-details">
-                        <h3>Executive King Room</h3>
-                        <div class="guest-info">1 Guest • 1 Night</div>
+                        <h3 id="summaryRoom">Executive King Room</h3>
+                        <div class="guest-info" id="summaryGuest">1 Guest • 1 Night</div>
                     </div>
                 </div>
 
@@ -580,22 +581,22 @@
                 <div class="price-breakdown">
                     <h3>Price Breakdown</h3>
                     <div class="price-row">
-                        <span class="price-label">Executive King Room ($320 × 1 nights)</span>
-                        <span class="price-value">$320</span>
+                        <span class="price-label" id="summaryPrice">Executive King Room ($320 × 1 nights)</span>
+                        <span class="price-value" id="summaryBaseprice">$320</span>
                     </div>
                     <div class="price-row">
                         <span class="price-label">Taxes & Fees</span>
-                        <span class="price-value">$38</span>
+                        <span class="price-value" id="summaryTax">$38</span>
                     </div>
                     <div class="price-row total">
                         <span class="price-label">Total</span>
-                        <span class="price-value">$358</span>
+                        <span class="price-value" id="summaryTotal">$358</span>
                     </div>
                 </div>
 
                 <!-- Action Buttons -->
                 <div class="action-buttons">
-                    <button class="action-btn secondary" onclick="printReceipt()">Print Receipt</button>
+                    <button class="action-btn secondary" id="printReceipt">Print Receipt</button>
                     <a href="{{ url('/bookings') }}" class="action-btn primary">View Booking</a>
                 </div>
             </div>
@@ -662,6 +663,46 @@
     </footer>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/bookings')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.bookings[0]);
+                const checkin= new Date(data.bookings[0].check_in);
+                const checkout= new Date(data.bookings[0].check_out);
+
+                // Format as "August 15, 2025"
+                const checkinFormatted = checkin.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    timeZone: 'UTC' // Important for UTC dates
+                });  
+                const checkoutFormatted = checkout.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    timeZone: 'UTC' // Important for UTC dates
+                });
+                //const checkinFormatted = data.bookings[0].check_in.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                //const checkoutFormatted = data.bookings[0].check_out.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                //const timeDiff = data.bookings[0].check_out.getTime() - data.bookings[0].check_in.getTime();
+                //const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                document.getElementById('bookingCode').textContent = data.bookings[0].confirmation_code;
+                document.getElementById('summaryRoom').textContent = data.bookings[0].room.name;
+                document.getElementById('summaryGuest').textContent = `${data.bookings[0].guests} Guest`;
+                document.getElementById('summaryCheckin').textContent = checkinFormatted;
+                document.getElementById('summaryCheckout').textContent = checkoutFormatted;
+                document.getElementById('summaryImage').src= `images/${data.bookings[0].room.images}`;
+                document.getElementById('summaryBaseprice').textContent = `Ksh${data.bookings[0].base_amount}`;
+                document.getElementById('summaryPrice').textContent = `${data.bookings[0].room.name}  ${data.bookings[0].base_amount}`;
+                document.getElementById('summaryTax').textContent = `Ksh${data.bookings[0].tax_amount}`;
+                document.getElementById('summaryTotal').textContent = `Ksh${data.bookings[0].total_price}`;   
+            });
+        });
+
+        
+        
         // Mobile menu functionality
         const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
         const navLinks = document.querySelector('.nav-links');
@@ -739,31 +780,31 @@
             
             const printWindow = window.open('', '_blank');
             printWindow.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Booking Receipt - Matfam Hotel</title>
-                    <style>
-                        body { margin: 0; padding: 20px; }
-                        @media print {
-                            body { margin: 0; }
-                        }
-                    </style>
-                </head>
-                <body>
-                    ${printContent}
-                    <script>
-                        window.onload = function() {
-                            window.print();
-                            window.onafterprint = function() {
-                                window.close();
-                            }
-                        }
-                        printWindow.document.close();
-                    </script>
-                </body>
-                </html>
-            `);
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Booking Receipt - Matfam Hotel</title>
+        <style>
+            body { margin: 0; padding: 20px; }
+            @media print {
+                body { margin: 0; }
+            }
+        </style>
+    </head>
+    <body>
+        ${printContent}
+        <script>
+            window.onload = function() {
+                window.print();
+                window.onafterprint = function() {
+                    window.close();
+                };
+            };
+        <\/script>
+    </body>
+    </html>
+`);
+printWindow.document.close(); // Add this after writing
            
         };
     </script>

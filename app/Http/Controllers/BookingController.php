@@ -64,18 +64,19 @@ class BookingController extends Controller
     {
         try {
             $booking = $this->bookingService->createBooking(
-                Auth::id(),
+                //Auth::id(),
+                $request->user_id,
                 $request->room_id,
                 $request->only(['check_in', 'check_out', 'guests']),
                 $request->guest_details
             );
 
             // Create payment intent
-            $paymentIntent = $this->paymentService->createPaymentIntent(
+            $paymentIntent = "pending";/*$this->paymentService->createPaymentIntent(
                 $booking->total_price,
                 'usd',
                 ['booking_id' => $booking->id]
-            );
+            );*/
 
             return response()->json([
                 'booking' => $booking,
