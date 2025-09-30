@@ -843,7 +843,14 @@
                 <li><a href="{{ url('/') }}">Home</a></li>
                 <li><a href="{{ url('/rooms') }}">Rooms</a></li>
                 <li><a href="{{ url('/services') }}" class="active">Services</a></li>
-                <li><a href="{{ url('/about') }}">About</a></li>
+                 @guest
+            @if (Route::has('login'))
+            <li><a href="{{ url('/about') }}">About</a></li>
+            @endif
+        @else
+        <li><a href="{{ url('/bookings') }}">Bookings</a></li>
+        @endguest
+                
             </ul>
             <div class="auth-buttons">
                 <!-- Authentication Links -->

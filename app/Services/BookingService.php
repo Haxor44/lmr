@@ -8,6 +8,10 @@ use App\Events\BookingCreated;
 use App\Events\BookingCancelled;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
+//se Illuminate\Support\Facades\Log;
+use App\Notifications\BookingConfirmation;
 
 class BookingService
 {
@@ -56,13 +60,40 @@ class BookingService
                 'status' => 'pending'
             ]);
 
+             
+
             // Clear cache for room availability
             Cache::forget("room_availability_{$roomId}");
 
             event(new BookingCreated($booking));
-
+            //event(sendBookingConfirmation());
+             
             return $booking;
         });
+        //return null;
+        
+    }
+
+    protected function sendBookingConfirmation($booking)
+    {
+        try {
+            // Load required relationships if not already loaded
+            $booking->load(['room', 'user']);
+            
+            // Send confirmation email to user
+            $booking->user->notify(new BookingConfirmation($booking));
+            
+            // Log successful notification
+            \Log::info('Booking confirmation sent', [
+                'booking_id' => $booking->id,
+                'user_email' => $booking->user->email
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Failed to send booking confirmation: ' . $e->getMessage(), [
+                'booking_id' => $booking->id ?? 'unknown'
+            ]);
+        }
     }
 
     public function confirmBooking($bookingId, $paymentId, $paymentMethod)
@@ -76,12 +107,44 @@ class BookingService
                 'payment_method' => $paymentMethod
             ]);
 
-            // Update room availability
-            $room = $booking->room;
-            $room->update(['availability' => 'booked']);
+            // Update room availability - be more conservative with room status
+            $this->updateRoomAvailabilityForBooking($booking);
+
+            // Send confirmation notification
+            $this->sendBookingConfirmation($booking);
 
             return $booking;
         });
+    }
+
+    /**
+     * Update room availability based on booking dates
+     */
+    protected function updateRoomAvailabilityForBooking($booking)
+    {
+        $room = $booking->room;
+        
+        // Only mark room as booked if no other active bookings overlap
+        $overlappingBookings = $room->bookings()
+            ->where('id', '!=', $booking->id)
+            ->whereIn('status', ['confirmed', 'pending'])
+            ->where(function ($query) use ($booking) {
+                $query->where(function ($q) use ($booking) {
+                    $q->where('check_in', '<=', $booking->check_in)
+                      ->where('check_out', '>', $booking->check_in);
+                })->orWhere(function ($q) use ($booking) {
+                    $q->where('check_in', '<', $booking->check_out)
+                      ->where('check_out', '>=', $booking->check_out);
+                })->orWhere(function ($q) use ($booking) {
+                    $q->where('check_in', '>=', $booking->check_in)
+                      ->where('check_out', '<=', $booking->check_out);
+                });
+            })
+            ->exists();
+
+        if (!$overlappingBookings && $room->availability === 'available') {
+            $room->update(['availability' => 'booked']);
+        }
     }
 
     public function cancelBooking($bookingId, $reason = null)

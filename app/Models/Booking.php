@@ -44,6 +44,16 @@ class Booking extends Model
         return $this->belongsTo(Room::class);
     }
 
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class)->latest();
+    }
+
     public function getDurationAttribute()
     {
         return $this->check_out->diffInDays($this->check_in);

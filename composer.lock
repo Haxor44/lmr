@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "309c80dc7975f8edbb2369c324d31c5e",
+    "content-hash": "70ad79a80d285f3f133424f8982aae1c",
     "packages": [
         {
             "name": "akaunting/laravel-money",
@@ -3201,6 +3201,57 @@
                 }
             ],
             "time": "2023-02-08T01:06:31+00:00"
+        },
+        {
+            "name": "nyawach/laravel-pesapal",
+            "version": "v1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Jnyawach/laravel-pesapalv3.git",
+                "reference": "8279fcb54176c5877e0d0bef0c60c0c8c82fe229"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Jnyawach/laravel-pesapalv3/zipball/8279fcb54176c5877e0d0bef0c60c0c8c82fe229",
+                "reference": "8279fcb54176c5877e0d0bef0c60c0c8c82fe229",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "^5.0|^6.0|^7.0|^8.0|^9.0|^10.0",
+                "php": ">=7.4"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "LaravelPesapal": "Nyawach\\LaravelPesapal\\Facades"
+                    },
+                    "providers": [
+                        "Nyawach\\LaravelPesapal\\PesaPalServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Nyawach\\LaravelPesapal\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "jnyawach",
+                    "email": "nyawach41@gmail.com"
+                }
+            ],
+            "description": "A simple pesapal payment v3 integration into laravel",
+            "support": {
+                "issues": "https://github.com/Jnyawach/laravel-pesapalv3/issues",
+                "source": "https://github.com/Jnyawach/laravel-pesapalv3/tree/v1.1.0"
+            },
+            "time": "2024-02-03T08:38:44+00:00"
         },
         {
             "name": "phpoption/phpoption",

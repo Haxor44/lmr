@@ -94,6 +94,16 @@ return [
                 'postmark',
             ],
         ],
+
+        'reservations' => [
+        'transport' => 'smtp',
+        'host' => env('RESERVATIONS_MAIL_HOST'),
+        'port' => env('RESERVATIONS_MAIL_PORT'),
+        'username' => env('RESERVATIONS_MAIL_USERNAME'),
+        'password' => env('RESERVATIONS_MAIL_PASSWORD'),
+        'encryption' => env('MAIL_ENCRYPTION', 'tls'),
+        'timeout' => null,
+        ],
     ],
 
     /*

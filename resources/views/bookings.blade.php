@@ -199,7 +199,7 @@
             color: #333;
         }
 
-        .room-name {
+        .room-name  {
             font-weight: 500;
             color: #333;
         }
@@ -656,7 +656,14 @@
                 <li><a href="{{ url('/') }}">Home</a></li>
                 <li><a href="{{ url('/rooms') }}">Rooms</a></li>
                 <li><a href="{{ url('/services') }}" class="active">Services</a></li>
-                <li><a href="{{ url('/about') }}">About</a></li>
+                 @guest
+            @if (Route::has('login'))
+            <li><a href="{{ url('/about') }}">About</a></li>
+            @endif
+        @else
+        <li><a href="{{ url('/bookings') }}">Bookings</a></li>
+        @endguest
+                
             </ul>
             <div class="auth-buttons">
                 <!-- Authentication Links -->
@@ -708,29 +715,8 @@
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="booking-id">BK-8A7F32D1</td>
-                                    <td class="room-name">Deluxe King Room</td>
-                                    <td class="booking-dates">Jun 20 - Jun 23, 2025</td>
-                                    <td class="guest-count">2</td>
-                                    <td class="booking-total">$825</td>
-                                    <td class="booking-actions">
-                                        <a href="#" class="action-btn view">View</a>
-                                        <button class="action-btn cancel" onclick="cancelBooking('BK-8A7F32D1')">Cancel</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="booking-id">BK-9B7E21C3</td>
-                                    <td class="room-name">Luxury Suite</td>
-                                    <td class="booking-dates">Jul 15 - Jul 18, 2025</td>
-                                    <td class="guest-count">2</td>
-                                    <td class="booking-total">$1485</td>
-                                    <td class="booking-actions">
-                                        <a href="#" class="action-btn view">View</a>
-                                        <button class="action-btn cancel" onclick="cancelBooking('BK-9B7E21C3')">Cancel</button>
-                                    </td>
-                                </tr>
+                            <tbody id="tableData">
+
                             </tbody>
                         </table>
                         <div class="empty-message">List of your upcoming bookings.</div>
@@ -769,7 +755,7 @@
             </div>
         </div>
     </main>
-
+        
     <!-- Footer -->
     <footer>
         <div class="container">
@@ -854,6 +840,55 @@
     </div>
 
     <script>
+
+        function createBookingRow(booking,checkin,checkout){
+            const container = document.createElement('tr');
+            container.innerHTML = `
+                        
+                                    <td class="booking-id">${booking.id}</td>
+                                    <td class="room-name" >${booking.room.name}</td>
+                                    <td class="booking-dates">${checkin} - ${checkout}</td>
+                                    <td class="guest-count">${booking.guests}</td>
+                                    <td class="booking-total">KSH${booking.base_amount}</td>
+                                    <td class="booking-actions">
+                                        <a href="#" class="action-btn view">View</a>
+                                        <button class="action-btn cancel" onclick="cancelBooking('BK-8A7F32D1')">Cancel</button>
+                                    </td>
+                                
+                    `
+                    return container;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            
+            fetch('/mybookings')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('tableData');
+                const bookings = Object.values(data.bookings);
+                bookings.forEach(booking => {
+                    const checkin= new Date(booking.check_in);
+                const checkout= new Date(booking.check_out);
+
+                // Format as "August 15, 2025"
+                const checkinFormatted = checkin.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    timeZone: 'UTC' // Important for UTC dates
+                });  
+                const checkoutFormatted = checkout.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    timeZone: 'UTC' // Important for UTC dates
+                });
+                    container.appendChild(createBookingRow(booking,checkinFormatted,checkoutFormatted));
+                });
+                
+            });
+        });
         // Mobile menu functionality
         const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
         const navLinks = document.querySelector('.nav-links');

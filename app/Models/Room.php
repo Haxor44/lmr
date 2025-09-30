@@ -39,18 +39,8 @@ class Room extends Model
         // Check for conflicting bookings
         $conflictingBookings = $this->bookings()
             ->where('status', '!=', 'cancelled')
-            ->where(function ($query) use ($checkIn, $checkOut) {
-                $query->where(function ($q) use ($checkIn, $checkOut) {
-                    $q->where('check_in', '<=', $checkIn)
-                      ->where('check_out', '>', $checkIn);
-                })->orWhere(function ($q) use ($checkIn, $checkOut) {
-                    $q->where('check_in', '<', $checkOut)
-                      ->where('check_out', '>=', $checkOut);
-                })->orWhere(function ($q) use ($checkIn, $checkOut) {
-                    $q->where('check_in', '>=', $checkIn)
-                      ->where('check_out', '<=', $checkOut);
-                });
-            })
+            ->where('check_out', '>', $checkIn)  // Existing booking ends after requested check-in
+            ->where('check_in', '<', $checkOut) 
             ->exists();
 
         return !$conflictingBookings;

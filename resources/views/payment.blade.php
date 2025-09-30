@@ -889,7 +889,14 @@
                 <li><a href="{{ url('/') }}">Home</a></li>
                 <li><a href="{{ url('/rooms') }}">Rooms</a></li>
                 <li><a href="{{ url('/services') }}" class="active">Services</a></li>
-                <li><a href="{{ url('/about') }}">About</a></li>
+                 @guest
+            @if (Route::has('login'))
+            <li><a href="{{ url('/about') }}">About</a></li>
+            @endif
+        @else
+        <li><a href="{{ url('/bookings') }}">Bookings</a></li>
+        @endguest
+                
             </ul>
             <div class="auth-buttons">
                 <!-- Authentication Links -->
@@ -1212,7 +1219,7 @@
              document.getElementById('summaryRoom').textContent = room.room_name;
              document.getElementById('summaryDates').textContent = `${room.checkin} - ${room.checkout}`;
              document.getElementById('summarySubtotal').textContent = `Ksh${room.subtotal}`;
-             document.getElementById('summaryRates').textContent = `Ksh${room.base_price} × ${room.nights} nights`;
+             document.getElementById('summaryRates').textContent = `Ksh${room.base_price} ×  ${room.nights} nights`;
              document.getElementById('summaryNights').textContent = `${room.nights} nights`;
              document.getElementById('summaryTax').textContent = `Ksh${room.tax}`;
              document.getElementById('summaryTotal').textContent = `Ksh${room.total}`;
@@ -1283,7 +1290,13 @@
             e.target.value = e.target.value.replace(/\D/g, '');
         });
 
-        
+        async function confirmBooking(){
+            try {
+                return await fetch('127.0.0.1:8000/emails')
+            } catch (error) {
+                
+            }
+        }
          async function createBooking() {
      try {
 
@@ -1334,6 +1347,7 @@
       }
     })
     });
+    //confirmBooking();
   } catch (error) {
     console.log('Booking error:', error);
     // Handle error in your UI
@@ -1392,7 +1406,7 @@
             var cookiedata = getCookie('room');
             var room = JSON.parse(cookiedata);
             console.log(room.room_id);
-            //createBooking();
+            createBooking();
             
             // Simulate payment processing
             submitBtn.textContent = 'Processing Payment...';
@@ -1401,7 +1415,7 @@
             setTimeout(() => {
                 //alert('Payment successful! Redirecting to confirmation page...');
                 // In a real application, this would redirect to the confirmation page
-                window.location.replace("{{ url('/confirmation') }}");
+                //window.location.replace("{{ url('/confirmation') }}");
                 
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;

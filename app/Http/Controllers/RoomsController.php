@@ -117,7 +117,11 @@ class RoomsController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            // For web requests, redirect back with errors
+            if ($request->expectsJson()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+            return redirect()->back()->withErrors($validator->errors())->withInput();
         }
 
         $checkIn = $request->check_in;
@@ -152,7 +156,7 @@ class RoomsController extends Controller
         $roomsWithDetails = $rooms->map(function ($room) use ($checkIn, $checkOut, $guests) {
             $pricing = $this->bookingService->calculatePricing($room, $checkIn, $checkOut, $guests);
             
-            return [
+            return (object) [
                 'id' => $room->id,
                 'name' => $room->name,
                 'description' => $room->description,
@@ -181,15 +185,28 @@ class RoomsController extends Controller
                 : $roomsWithDetails->sortByDesc('name');
         }
 
-        return response()->json([
+        $searchCriteria = [
+            'check_in' => $checkIn,
+            'check_out' => $checkOut,
+            'guests' => $guests,
+            'room_type' => $request->room_type,
+            'duration' => Carbon::parse($checkOut)->diffInDays(Carbon::parse($checkIn))
+        ];
+
+        // For API requests, return JSON
+        if ($request->expectsJson()) {
+            return response()->json([
+                'rooms' => $roomsWithDetails->values(),
+                'search_criteria' => $searchCriteria,
+                'total_found' => $roomsWithDetails->count()
+            ]);
+        }
+
+        // For web requests, return view
+        return view('rooms-search', [
             'rooms' => $roomsWithDetails->values(),
-            'search_criteria' => [
-                'check_in' => $checkIn,
-                'check_out' => $checkOut,
-                'guests' => $guests,
-                'duration' => Carbon::parse($checkOut)->diffInDays(Carbon::parse($checkIn))
-            ],
-            'total_found' => $roomsWithDetails->count()
+            'searchCriteria' => $searchCriteria,
+            'totalFound' => $roomsWithDetails->count()
         ]);
     }
 

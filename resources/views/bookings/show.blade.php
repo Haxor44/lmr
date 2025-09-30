@@ -24,10 +24,23 @@
                 @endforeach
             </ul>
             
-            <a href="{{ route('payments.create', ['booking' => $booking->id]) }}" 
-               class="btn btn-success">
-                Proceed to Payment
-            </a>
+            @if($booking->status === 'pending')
+                <a href="{{ route('payments.show', $booking->id) }}" 
+                   class="btn btn-success btn-lg">
+                    <i class="fas fa-credit-card me-2"></i>
+                    Complete Payment (KES {{ number_format($booking->total_price, 2) }})
+                </a>
+            @elseif($booking->status === 'confirmed')
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Payment confirmed! Your booking is confirmed.
+                </div>
+            @elseif($booking->status === 'cancelled')
+                <div class="alert alert-danger">
+                    <i class="fas fa-times-circle me-2"></i>
+                    This booking has been cancelled.
+                </div>
+            @endif
         </div>
     </div>
 </div>

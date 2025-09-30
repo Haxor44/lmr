@@ -5,6 +5,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BookingConfirmationController;
 use App\Http\Controllers\RoomsController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PesapalPaymentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -46,7 +47,11 @@ Route::prefix('rooms')->group(function () {
 });
 
 Route::post('/bookings', [BookingController::class, 'createBooking']);
-Route::get('/bookings', [BookingController::class, 'getUserBookings']);
+Route::get('/emails', [BookingController::class, 'sendBookingConfirmation']);
+Route::get('/mybookings', [BookingController::class, 'getUserBookings']);
+Route::get('/bookings', [BookingController::class, 'showUserBookings']);
+Route::get('/pay', [BookingController::class, 'makePayment']);
+Route::get('/transaction', [BookingController::class, 'getTransaction']);
 /*Route::middleware('auth:sanctum')->group(function () {
     // Booking routes
     
@@ -55,8 +60,18 @@ Route::get('/bookings', [BookingController::class, 'getUserBookings']);
     
 });*/
 
-Route::prefix('payment')->group(function () {
-    Route::get('/',[PaymentController::class,'index']);
+// Pesapal Payment Routes
+Route::prefix('payments')->group(function () {
+    Route::get('/{booking}/show', [PesapalPaymentController::class, 'show'])->name('payments.show');
+    Route::post('/{booking}/initiate', [PesapalPaymentController::class, 'initiate'])->name('payments.initiate');
+    Route::get('/callback', [PesapalPaymentController::class, 'callback'])->name('payments.callback');
+    Route::post('/ipn', [PesapalPaymentController::class, 'ipn'])->name('payments.ipn');
+    Route::get('/status/{orderTrackingId}', [PesapalPaymentController::class, 'checkStatus'])->name('payments.status');
+    Route::post('/{payment}/refund', [PesapalPaymentController::class, 'requestRefund'])->name('payments.refund');
+    Route::get('/history', [PesapalPaymentController::class, 'history'])->name('payments.history');
+    
+    // Keep old payment controller for backward compatibility
+    Route::get('/',[PaymentController::class,'index'])->name('payments.index');
 });
 
  Route::get('/confirmation',[BookingConfirmationController::class,'index']);
